@@ -1,0 +1,62 @@
+﻿@page "/register"
+@using Frontend.Services
+@inject BackendService _backendService
+
+<h1>Register</h1>
+<p>Please enter your details to create a new account</p>
+
+<p>
+    <h4>Your email address</h4>
+    <input name="email" @bind="Email" @bind:event="oninput" />
+</p>
+
+<p>
+    <h4>Your password</h4>
+    <input name="password" type="password" @bind="Password" @bind:event="oninput" />
+</p>
+
+<p>
+    <h4>Your password again</h4>
+    <input name="passwordAgain" type="password" @bind="PasswordAgain" @bind:event="oninput" />
+</p>
+
+<button class="btn btn-primary" disabled="@_registerBtnDisabled" @onclick="RegisterNewUser">Register</button>
+
+@code {
+    private bool _registerBtnDisabled = true;
+
+    private string _email = string.Empty;
+    private string Email
+    {
+        get { return _email; }
+        set { _email = value; CheckDetails(); }
+    }
+
+    private string _password;
+    private string Password
+    {
+        get { return _password; }
+        set { _password = value; CheckDetails(); }
+    }
+
+    private string _passwordAgain;
+    private string PasswordAgain
+    {
+        get { return _passwordAgain; }
+        set { _passwordAgain = value; CheckDetails(); }
+    }
+
+    private async Task RegisterNewUser()
+    {
+        var result = await _backendService.RegisterNewAccount(_email, _password);
+        Console.WriteLine($"Success: {result.success}, Message: {result.message}");
+    }
+
+    private void CheckDetails()
+    {
+        _registerBtnDisabled = !EmailValidator.Validate(_email)
+            || string.IsNullOrEmpty(_password)
+            || string.IsNullOrEmpty(_passwordAgain)
+            || _password != _passwordAgain;
+    }
+}

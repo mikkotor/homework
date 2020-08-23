@@ -1,5 +1,7 @@
 ﻿@page "/register"
 @using Frontend.Services
+@using EzPasswordValidator.Validators
+@using EzPasswordValidator.Checks
 @inject BackendService _backendService
 
 <h1>Register</h1>
@@ -14,7 +16,7 @@
 <p>
     <h4>Your password</h4>
     <input name="password" type="password" @bind="Password" @bind:event="oninput" />
-    <h5 hidden=@_passwordInsufficientWarningDisabled>Password must be at least 8 characters with lower and uppercase letters and numbers</h5>
+    <h5 hidden=@_passwordInsufficientWarningDisabled>Password must be at least 8 characters with letters, numbers & symbols</h5>
 </p>
 
 <p>
@@ -35,7 +37,7 @@
     private string Email
     {
         get { return _email; }
-        set { _email = value; _emailUsedWarningDisabled = true ; CheckDetails(); }
+        set { _email = value; _emailUsedWarningDisabled = true; CheckDetails(); }
     }
 
     private string _password = string.Empty;
@@ -54,7 +56,7 @@
 
     private async Task RegisterNewUser()
     {
-        if(await _backendService.IsEmailUsed(_email))
+        if (await _backendService.IsEmailUsed(_email))
         {
             _emailUsedWarningDisabled = false;
         }
@@ -70,16 +72,19 @@
 
     private void CheckDetails()
     {
-        CheckPasswordLength();
+        CheckPasswordStrength();
         CheckPasswordsMatch();
         _registerBtnDisabled = !EmailValidator.Validate(_email)
             || !_passwordsDontMatchWarningDisabled
             || !_passwordInsufficientWarningDisabled;
     }
 
-    private void CheckPasswordLength()
+    private void CheckPasswordStrength()
     {
-        _passwordInsufficientWarningDisabled = _password.Length >= 8;
+        var pwdValidator = new PasswordValidator();
+        pwdValidator.AddCheck(CheckTypes.Letters | CheckTypes.Numbers | CheckTypes.Length | CheckTypes.Symbols);
+        pwdValidator.MinLength = 8;
+        _passwordInsufficientWarningDisabled = pwdValidator.Validate(_password);
     }
 
     private void CheckPasswordsMatch()

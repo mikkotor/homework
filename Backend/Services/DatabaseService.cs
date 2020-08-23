@@ -1,6 +1,7 @@
 using Backend.Helpers;
 using Backend.Models;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Data.Common;
@@ -12,11 +13,11 @@ namespace Backend.Services
         private readonly string _connectionString;
         private readonly ILogger<DatabaseService> _logger;
 
-        public DatabaseService(ILogger<DatabaseService> logger)
+        public DatabaseService(ILogger<DatabaseService> logger, IConfiguration configuration)
         {
             _logger = logger;
 
-            _connectionString = new SqliteConnectionStringBuilder("Data Source=Backend.db;Cache=Shared")
+            _connectionString = new SqliteConnectionStringBuilder(configuration.GetConnectionString("Backend"))
             {
                 Mode = SqliteOpenMode.ReadWriteCreate
             }.ToString();

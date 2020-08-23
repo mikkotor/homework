@@ -24,7 +24,6 @@ namespace Frontend
             services.Configure<BackendServerConfig>(x => Configuration.GetSection("BackendServer").Bind(x));
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<BackendService>();
             services.AddHttpClient();
         }

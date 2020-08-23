@@ -32,9 +32,17 @@ This project is built using and depends on:
 * Clone this repository to your machine
 * Make sure you have .NET Core 3.1 SDK installed
 * If you have Visual Studio on your machine, open the solution file and mark both Backend and Fronted solutions as startup projects, then rebuild and run
-* You can also use dotnet CLI tool to run the project. In this mode, Run Backend.csproj and Frontend.csproj on their own terminals.
+* You can also use dotnet CLI tool to run the project. In this mode, Run Backend.csproj and Frontend.csproj on their own terminals
+
+**Caveat! Make sure ports 5000 and 5001 are free on your machine, otherwise the project fails to launch**
 
 ## Tests
 
 Both projects contain unit tests for the service classes the "business logic" is implemented in.
 Furthermore, BackendIntegrationTests verify that the SQLite database can be setup and used properly without having to just run the project and hope for the best.
+
+## Limitations
+
+* All network traffic flows unencrypted via plain HTTP. Dealing with certificate errors and exceptions seemed too much for this so I decided not to enable HTTPS
+* Blazor is a new ASP.NET technology for quickly building interactive web UIs. As it's so new, it's bound to have some limitations that prevent production use at this stage but for a tech demo / interview homework it seemed like a good tool
+* I didn't code any UI tests for this as the register form is quite simple and easily testable manually

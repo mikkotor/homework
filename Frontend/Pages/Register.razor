@@ -20,8 +20,8 @@
     <h5 hidden=@_passwordInsufficientWarningDisabled>Password must be at least 8 characters with letters, numbers & symbols</h5>
 </p>
 
-<p>
-    <h4>Your password again</h4>
+<p hidden=@_retypePasswordHidden>
+    <h4>Retype your password to verify</h4>
     <input name="passwordAgain" type="password" @bind="PasswordAgain" @bind:event="oninput" />
     <h5 hidden=@_passwordsDontMatchWarningDisabled>Passwords must match</h5>
 </p>
@@ -32,6 +32,7 @@
     private bool _registerBtnDisabled = true;
     private bool _emailUsedWarningDisabled = true;
     private bool _passwordInsufficientWarningDisabled = false;
+    private bool _retypePasswordHidden = true;
     private bool _passwordsDontMatchWarningDisabled = true;
 
     private string _email = string.Empty;
@@ -66,10 +67,10 @@
             try
             {
                 var result = await _backendService.RegisterNewAccount(_email, _password);
-                await JsRuntime.InvokeVoidAsync("alert", result.message);
                 Email = string.Empty;
                 Password = string.Empty;
                 PasswordAgain = string.Empty;
+                await JsRuntime.InvokeVoidAsync("alert", result.message);
             }
             catch
             {
@@ -93,6 +94,7 @@
         pwdValidator.AddCheck(CheckTypes.Letters | CheckTypes.Numbers | CheckTypes.Length | CheckTypes.Symbols);
         pwdValidator.MinLength = 8;
         _passwordInsufficientWarningDisabled = pwdValidator.Validate(_password);
+        _retypePasswordHidden = !_passwordInsufficientWarningDisabled;
     }
 
     private void CheckPasswordsMatch()

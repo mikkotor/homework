@@ -29,7 +29,17 @@ namespace Frontend.Services
         {
             try
             {
-                return false;
+                var client = _clientFactory.CreateClient();
+                client.BaseAddress = new Uri(_options.BaseUrl);
+                var response = await client.GetAsync(_options.UsersController + "?email=" + email);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -49,7 +59,7 @@ namespace Frontend.Services
                 client.BaseAddress = new Uri(_options.BaseUrl);
                 var requestContent = JsonContent.Create(newUser);
                 
-                var response = await client.PostAsync(_options.AddNewUser, requestContent);
+                var response = await client.PostAsync(_options.UsersController, requestContent);
                 var content = await response.Content.ReadAsStringAsync();
                 if (response.IsSuccessStatusCode)
                 {

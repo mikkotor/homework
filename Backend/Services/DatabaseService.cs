@@ -1,11 +1,9 @@
+using Backend.Helpers;
 using Backend.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Backend.Services
 {
@@ -26,13 +24,16 @@ namespace Backend.Services
             PrepareDb();
         }
 
+        /// <summary>
+        /// Prepare database for operation, ie. create the Backend.db file and Users table within if not already present
+        /// </summary>
         private void PrepareDb()
         {
             try
             {
                 using var connection = OpenNewConnection();
                 var command = connection.CreateCommand();
-                command.CommandText = GetSqlScript("CreateUsersTable.sql");
+                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("CreateUsersTable.sql");
                 command.ExecuteNonQuery();
             }
             catch (Exception ex)
@@ -42,6 +43,10 @@ namespace Backend.Services
             }
         }
 
+        /// <summary>
+        /// Open a new connection to database using the configured connection string from appsettings.json
+        /// </summary>
+        /// <returns>A new open connection to Database.db</returns>
         private DbConnection OpenNewConnection()
         {
             var connection = new SqliteConnection(_connectionString);
@@ -49,17 +54,13 @@ namespace Backend.Services
             return connection;
         }
 
-        private string GetSqlScript(string scriptName)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceNames = assembly.GetManifestResourceNames();
-            var resource = assembly.GetManifestResourceStream(resourceNames.Single(x => x.Contains(scriptName)));
-
-            using var reader = new StreamReader(resource);
-            return reader.ReadToEnd();
-        }
-
-        public User AddNewUser(string email, string passwordHash)
+        /// <summary>
+        /// Add a new user to the database and return a User object
+        /// </summary>
+        /// <param name="email">Email address of the user</param>
+        /// <param name="passwordHash">Bcrypted password</param>
+        /// <returns>New User object with database Id</returns>
+        public User InsertNewUser(string email, string passwordHash)
         {
             var newUser = new User()
             {
@@ -71,7 +72,7 @@ namespace Backend.Services
             {
                 using var connection = OpenNewConnection();
                 DbCommand command = connection.CreateCommand();
-                command.CommandText = GetSqlScript("InsertNewUser.sql");
+                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("InsertNewUser.sql");
 
                 var param1 = command.CreateParameter();
                 param1.ParameterName = "Email";
@@ -86,16 +87,57 @@ namespace Backend.Services
                 command.Parameters.Add(param2);
 
                 using var reader = command.ExecuteReader();
-                while (reader.Read())
+                if (reader.Read())
                 {
                     newUser.Id = reader.GetInt32(0);
-                    break;
+                    return newUser;
                 }
-                return newUser;
+                else
+                    throw new Exception("Couldn't read primary key.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to add '{email}' to database.");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Search for a specific user from database using their email address
+        /// </summary>
+        /// <param name="email">The email address</param>
+        /// <returns>The User object found or null if no match found</returns>
+        public User GetUserWithEmail(string email)
+        {
+            try
+            {
+                using var connection = OpenNewConnection();
+                DbCommand command = connection.CreateCommand();
+                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("GetUserWithEmail.sql");
+
+                var param1 = command.CreateParameter();
+                param1.ParameterName = "Email";
+                param1.Value = email;
+                param1.DbType = System.Data.DbType.String;
+                command.Parameters.Add(param1);
+
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    var user = new User
+                    {
+                        Id = reader.GetInt32(0),
+                        Email = reader.GetString(1),
+                        PasswordHash = reader.GetString(2)
+                    };
+                    return user;
+                }
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to search for '{email}' from database.");
                 return null;
             }
         }

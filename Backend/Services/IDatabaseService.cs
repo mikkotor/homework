@@ -4,6 +4,7 @@ namespace Backend.Services
 {
     public interface IDatabaseService
     {
-        User AddNewUser(string email, string passwordHash);
+        User InsertNewUser(string email, string passwordHash);
+        User GetUserWithEmail(string email);
     }
 }

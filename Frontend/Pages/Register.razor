@@ -8,6 +8,7 @@
 <p>
     <h4>Your email address</h4>
     <input name="email" @bind="Email" @bind:event="oninput" />
+    <h5 hidden=@_emailUsedWarningDisabled>This email address has already been used. Contact support if you need your password reset</h5>
 </p>
 
 <p>
@@ -24,12 +25,13 @@
 
 @code {
     private bool _registerBtnDisabled = true;
+    private bool _emailUsedWarningDisabled = true;
 
     private string _email = string.Empty;
     private string Email
     {
         get { return _email; }
-        set { _email = value; CheckDetails(); }
+        set { _email = value; _emailUsedWarningDisabled = true ; CheckDetails(); }
     }
 
     private string _password;
@@ -48,8 +50,18 @@
 
     private async Task RegisterNewUser()
     {
-        var result = await _backendService.RegisterNewAccount(_email, _password);
-        Console.WriteLine($"Success: {result.success}, Message: {result.message}");
+        if(await _backendService.IsEmailUsed(_email))
+        {
+            _emailUsedWarningDisabled = false;
+        }
+        else
+        {
+            var result = await _backendService.RegisterNewAccount(_email, _password);
+            Console.WriteLine($"Success: {result.success}, Message: {result.message}");
+            Email = string.Empty;
+            Password = string.Empty;
+            PasswordAgain = string.Empty;
+        }
     }
 
     private void CheckDetails()

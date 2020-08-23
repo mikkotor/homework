@@ -6,11 +6,13 @@
 
   <ItemGroup>
     <None Remove="SqlScripts\CreateUsersTable.sql" />
+    <None Remove="SqlScripts\GetUserWithEmail.sql" />
     <None Remove="SqlScripts\InsertNewUser.sql" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="SqlScripts\CreateUsersTable.sql" />
+    <EmbeddedResource Include="SqlScripts\GetUserWithEmail.sql" />
     <EmbeddedResource Include="SqlScripts\InsertNewUser.sql" />
   </ItemGroup>
 

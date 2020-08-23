@@ -4,6 +4,7 @@ using Frontend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -32,19 +33,23 @@ namespace Frontend.Services
                 var client = _clientFactory.CreateClient();
                 client.BaseAddress = new Uri(_options.BaseUrl);
                 var response = await client.GetAsync(_options.UsersController + "?email=" + email);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
                     return true;
                 }
-                else
+                else if (response.StatusCode == HttpStatusCode.NoContent)
                 {
                     return false;
+                }
+                else
+                {
+                    throw new Exception($"Unhandled response from backend service: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Something went wrong when calling backend service.");
-                return false;
+                throw;
             }
         }
 
@@ -60,7 +65,7 @@ namespace Frontend.Services
                 var requestContent = JsonContent.Create(newUser);
 
                 var response = await client.PostAsync(_options.UsersController, requestContent);
-                var content = await response.Content.ReadAsStringAsync();
+                var content = response.Content != null ? await response.Content.ReadAsStringAsync() : string.Empty;
                 if (response.IsSuccessStatusCode)
                 {
                     return (true, content);
@@ -74,7 +79,7 @@ namespace Frontend.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Something went wrong when calling backend service.");
-                return (false, "Something went wrong when calling backend service.");
+                throw;
             }
         }
 

@@ -14,11 +14,13 @@
 <p>
     <h4>Your password</h4>
     <input name="password" type="password" @bind="Password" @bind:event="oninput" />
+    <h5 hidden=@_passwordInsufficientWarningDisabled>Password must be at least 8 characters with lower and uppercase letters and numbers</h5>
 </p>
 
 <p>
     <h4>Your password again</h4>
     <input name="passwordAgain" type="password" @bind="PasswordAgain" @bind:event="oninput" />
+    <h5 hidden=@_passwordsDontMatchWarningDisabled>Passwords must match</h5>
 </p>
 
 <button class="btn btn-primary" disabled="@_registerBtnDisabled" @onclick="RegisterNewUser">Register</button>
@@ -26,6 +28,8 @@
 @code {
     private bool _registerBtnDisabled = true;
     private bool _emailUsedWarningDisabled = true;
+    private bool _passwordInsufficientWarningDisabled = false;
+    private bool _passwordsDontMatchWarningDisabled = true;
 
     private string _email = string.Empty;
     private string Email
@@ -34,14 +38,14 @@
         set { _email = value; _emailUsedWarningDisabled = true ; CheckDetails(); }
     }
 
-    private string _password;
+    private string _password = string.Empty;
     private string Password
     {
         get { return _password; }
         set { _password = value; CheckDetails(); }
     }
 
-    private string _passwordAgain;
+    private string _passwordAgain = string.Empty;
     private string PasswordAgain
     {
         get { return _passwordAgain; }
@@ -66,9 +70,20 @@
 
     private void CheckDetails()
     {
+        CheckPasswordLength();
+        CheckPasswordsMatch();
         _registerBtnDisabled = !EmailValidator.Validate(_email)
-            || string.IsNullOrEmpty(_password)
-            || string.IsNullOrEmpty(_passwordAgain)
-            || _password != _passwordAgain;
+            || !_passwordsDontMatchWarningDisabled
+            || !_passwordInsufficientWarningDisabled;
+    }
+
+    private void CheckPasswordLength()
+    {
+        _passwordInsufficientWarningDisabled = _password.Length >= 8;
+    }
+
+    private void CheckPasswordsMatch()
+    {
+        _passwordsDontMatchWarningDisabled = _password == _passwordAgain;
     }
 }

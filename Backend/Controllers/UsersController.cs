@@ -35,7 +35,7 @@ namespace Backend.Controllers
             if (newUser != null)
                 return new OkObjectResult($"New user '{newUser.Email}' registered.");
             else
-                return new BadRequestObjectResult($"Failed to register new user");
+                return new BadRequestObjectResult("Failed to register new user");
         }
     }
 }

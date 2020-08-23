@@ -49,7 +49,7 @@ namespace Frontend.Services
         }
 
         public async Task<(bool success, string message)> RegisterNewAccount(string email, string password)
-        {            
+        {
             try
             {
                 var passwordHash = GenerateEncryptedPassword(password);
@@ -58,7 +58,7 @@ namespace Frontend.Services
                 var client = _clientFactory.CreateClient();
                 client.BaseAddress = new Uri(_options.BaseUrl);
                 var requestContent = JsonContent.Create(newUser);
-                
+
                 var response = await client.PostAsync(_options.UsersController, requestContent);
                 var content = await response.Content.ReadAsStringAsync();
                 if (response.IsSuccessStatusCode)

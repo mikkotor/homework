@@ -16,12 +16,7 @@ namespace Backend.Services
         public DatabaseService(ILogger<DatabaseService> logger, IConfiguration configuration)
         {
             _logger = logger;
-
-            _connectionString = new SqliteConnectionStringBuilder(configuration.GetConnectionString("Backend"))
-            {
-                Mode = SqliteOpenMode.ReadWriteCreate
-            }.ToString();
-
+            _connectionString = configuration.GetConnectionString("Backend");
             PrepareDb();
         }
 

@@ -3,6 +3,7 @@
 @using EzPasswordValidator.Validators
 @using EzPasswordValidator.Checks
 @inject BackendService _backendService
+@inject IJSRuntime JsRuntime
 
 <h1>Register</h1>
 <p>Please enter your details to create a new account</p>
@@ -62,11 +63,18 @@
         }
         else
         {
-            var result = await _backendService.RegisterNewAccount(_email, _password);
-            Console.WriteLine($"Success: {result.success}, Message: {result.message}");
-            Email = string.Empty;
-            Password = string.Empty;
-            PasswordAgain = string.Empty;
+            try
+            {
+                var result = await _backendService.RegisterNewAccount(_email, _password);
+                await JsRuntime.InvokeVoidAsync("alert", result.message);
+                Email = string.Empty;
+                Password = string.Empty;
+                PasswordAgain = string.Empty;
+            }
+            catch
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Connection to backend service failed");
+            }
         }
     }
 

@@ -16,7 +16,7 @@ namespace Frontend.Services
         /// </summary>
         /// <param name="email">The email address of the new account</param>
         /// <param name="password">Bcrypted password of the new account</param>
-        /// <returns></returns>
+        /// <returns>Tuple with 'success' as boolean and 'message' with any extra details</returns>
         Task<(bool success, string message)> RegisterNewAccount(string email, string password);
     }
 }

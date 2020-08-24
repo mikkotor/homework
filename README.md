@@ -34,7 +34,7 @@ This project is built using and depends on:
 * If you have Visual Studio on your machine, open the solution file and mark both Backend and Fronted solutions as startup projects, then rebuild and run
 * You can also use dotnet CLI tool to run the project. In this mode, Run Backend.csproj and Frontend.csproj on their own terminals
 
-**Caveat! Make sure ports 5000 and 5001 are free on your machine, otherwise the project fails to launch**
+**Caveat! Make sure ports 5000 and 5001 are free on your machine, otherwise one or both apps fail to launch**
 
 ## Tests
 
@@ -46,3 +46,8 @@ Furthermore, BackendIntegrationTests verify that the SQLite database can be setu
 * All network traffic flows unencrypted via plain HTTP. Dealing with certificate errors and exceptions seemed too much for this so I decided not to enable HTTPS
 * Blazor is a new ASP.NET technology for quickly building interactive web UIs. As it's so new, it's bound to have some limitations that prevent production use at this stage but for a tech demo / interview homework it seemed like a good tool
 * I didn't code any UI tests for this as the register form is quite simple and easily testable manually
+
+## Potential improvements
+
+* Both projects could be Dockerized and deployed to a Kubernetes cluster with an ingress controller setup. This way the apps themselves can remain using unencrypted HTTP for communication between them within the closed cluster and the ingress controller would take care of allowing only HTTPS to the frontend from internet.
+* Email verification mechanism for newly registered accounts

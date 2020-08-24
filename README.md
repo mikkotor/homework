@@ -51,3 +51,4 @@ Furthermore, BackendIntegrationTests verify that the SQLite database can be setu
 
 * Both projects could be Dockerized and deployed to a Kubernetes cluster with an ingress controller setup. This way the apps themselves can remain using unencrypted HTTP for communication between them within the closed cluster and the ingress controller would take care of allowing only HTTPS to the frontend from internet.
 * Email verification mechanism for newly registered accounts
+* DatabaseService could be split into two services, like a base service that offers generic DB operations. That would definitely be good to do if this project would require more than one DB connection but I decided go with KISS principle here since abstraction just for the sake of abstraction isn't healthy :)

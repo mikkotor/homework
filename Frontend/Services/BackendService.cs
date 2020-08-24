@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Frontend.Services
 {
@@ -32,7 +33,8 @@ namespace Frontend.Services
             {
                 var client = _clientFactory.CreateClient();
                 client.BaseAddress = new Uri(_options.BaseUrl);
-                var response = await client.GetAsync(_options.UsersController + "?email=" + email);
+                var urlEncoded = _options.UsersController + "?email=" + HttpUtility.UrlEncode(email);
+                var response = await client.GetAsync(urlEncoded);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     return true;

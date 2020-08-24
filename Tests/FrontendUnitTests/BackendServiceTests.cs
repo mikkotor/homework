@@ -7,6 +7,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using Xunit;
 
 namespace FrontendUnitTests
@@ -37,7 +38,8 @@ namespace FrontendUnitTests
         [Fact]
         public async Task GivenEmailIsAlreadyUsed_WhenEmailQueried_ThenTrueIsReturned()
         {
-            _mockHttpMessageHandler.AddNewMockResponse("test@email.com", HttpStatusCode.OK);
+            var urlEncoded = HttpUtility.UrlEncode("test@email.com");
+            _mockHttpMessageHandler.AddNewMockResponse(urlEncoded, HttpStatusCode.OK);
 
             var result = await _service.IsEmailUsed("test@email.com");
 
@@ -47,7 +49,8 @@ namespace FrontendUnitTests
         [Fact]
         public async Task GivenEmailIsNotUsed_WhenEmailQueried_ThenFalseIsReturned()
         {
-            _mockHttpMessageHandler.AddNewMockResponse("test@email.com", HttpStatusCode.NoContent);
+            var urlEncoded = HttpUtility.UrlEncode("test@email.com");
+            _mockHttpMessageHandler.AddNewMockResponse(urlEncoded, HttpStatusCode.NoContent);
 
             var result = await _service.IsEmailUsed("test@email.com");
 

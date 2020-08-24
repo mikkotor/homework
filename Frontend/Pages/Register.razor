@@ -1,0 +1,104 @@
+﻿@page "/register"
+@using Frontend.Services
+@using EzPasswordValidator.Validators
+@using EzPasswordValidator.Checks
+@inject BackendService _backendService
+@inject IJSRuntime JsRuntime
+
+<h1>Register</h1>
+<p>Please enter your details to create a new account</p>
+
+<p>
+    <h4>Your email address</h4>
+    <input name="email" @bind="Email" @bind:event="oninput" />
+    <h5 hidden=@_emailUsedWarningDisabled>This email address has already been used. Contact support if you need your password reset</h5>
+</p>
+
+<p>
+    <h4>Your password</h4>
+    <input name="password" type="password" @bind="Password" @bind:event="oninput" />
+    <h5 hidden=@_passwordInsufficientWarningDisabled>Password must be at least 8 characters with letters, numbers & symbols</h5>
+</p>
+
+<p hidden=@_retypePasswordHidden>
+    <h4>Retype your password to verify</h4>
+    <input name="passwordAgain" type="password" @bind="PasswordAgain" @bind:event="oninput" />
+    <h5 hidden=@_passwordsDontMatchWarningDisabled>Passwords must match</h5>
+</p>
+
+<button class="btn btn-primary" disabled="@_registerBtnDisabled" @onclick="RegisterNewUser">Register</button>
+
+@code {
+    private bool _registerBtnDisabled = true;
+    private bool _emailUsedWarningDisabled = true;
+    private bool _passwordInsufficientWarningDisabled = false;
+    private bool _retypePasswordHidden = true;
+    private bool _passwordsDontMatchWarningDisabled = true;
+
+    private string _email = string.Empty;
+    private string Email
+    {
+        get { return _email; }
+        set { _email = value; _emailUsedWarningDisabled = true; CheckDetails(); }
+    }
+
+    private string _password = string.Empty;
+    private string Password
+    {
+        get { return _password; }
+        set { _password = value; CheckDetails(); }
+    }
+
+    private string _passwordAgain = string.Empty;
+    private string PasswordAgain
+    {
+        get { return _passwordAgain; }
+        set { _passwordAgain = value; CheckDetails(); }
+    }
+
+    private async Task RegisterNewUser()
+    {
+        if (await _backendService.IsEmailUsed(_email))
+        {
+            _emailUsedWarningDisabled = false;
+        }
+        else
+        {
+            try
+            {
+                var result = await _backendService.RegisterNewAccount(_email, _password);
+                Email = string.Empty;
+                Password = string.Empty;
+                PasswordAgain = string.Empty;
+                await JsRuntime.InvokeVoidAsync("alert", result.message);
+            }
+            catch
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Connection to backend service failed");
+            }
+        }
+    }
+
+    private void CheckDetails()
+    {
+        CheckPasswordStrength();
+        CheckPasswordsMatch();
+        _registerBtnDisabled = !EmailValidator.Validate(_email)
+            || !_passwordsDontMatchWarningDisabled
+            || !_passwordInsufficientWarningDisabled;
+    }
+
+    private void CheckPasswordStrength()
+    {
+        var pwdValidator = new PasswordValidator();
+        pwdValidator.AddCheck(CheckTypes.Letters | CheckTypes.Numbers | CheckTypes.Length | CheckTypes.Symbols);
+        pwdValidator.MinLength = 8;
+        _passwordInsufficientWarningDisabled = pwdValidator.Validate(_password);
+        _retypePasswordHidden = !_passwordInsufficientWarningDisabled;
+    }
+
+    private void CheckPasswordsMatch()
+    {
+        _passwordsDontMatchWarningDisabled = _password == _passwordAgain;
+    }
+}

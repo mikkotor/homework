@@ -1,5 +1,4 @@
-﻿using BCrypt;
-using Frontend.Configurations;
+﻿using Frontend.Configurations;
 using Frontend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -87,8 +86,8 @@ public class BackendService : IBackendService
 
     private string GenerateEncryptedPassword(string password)
     {
-        var salt = BCryptHelper.GenerateSalt();
-        var passwordHash = BCryptHelper.HashPassword(password, salt);
+        var salt = BCrypt.Net.BCrypt.GenerateSalt();
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(password, salt);
 
         return passwordHash;
     }

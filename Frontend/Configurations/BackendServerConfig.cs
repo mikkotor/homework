@@ -1,8 +1,7 @@
-namespace Frontend.Configurations
+namespace Frontend.Configurations;
+
+public class BackendServerConfig
 {
-    public class BackendServerConfig
-    {
-        public string BaseUrl { get; set; }
-        public string UsersController { get; set; }
-    }
+    public string BaseUrl { get; set; }
+    public string UsersController { get; set; }
 }

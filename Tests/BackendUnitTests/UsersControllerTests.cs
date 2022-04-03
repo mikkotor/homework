@@ -6,50 +6,49 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace BackendUnitTests
+namespace BackendUnitTests;
+
+public class UsersControllerTests
 {
-    public class UsersControllerTests
+    private readonly ILogger<UsersController> _logger;
+    private readonly IDatabaseService _database;
+    private readonly UsersController _usersController;
+
+    public UsersControllerTests()
     {
-        private readonly ILogger<UsersController> _logger;
-        private readonly IDatabaseService _database;
-        private readonly UsersController _usersController;
+        _logger = Substitute.For<ILogger<UsersController>>();
+        _database = Substitute.For<IDatabaseService>();
 
-        public UsersControllerTests()
+        _usersController = new UsersController(_logger, _database);
+    }
+
+    [Fact]
+    public void GivenUserIsNotAlreadyRegistered_WhenPostCalled_ThenOkObjectResultReturned()
+    {
+        var newUser = new User
         {
-            _logger = Substitute.For<ILogger<UsersController>>();
-            _database = Substitute.For<IDatabaseService>();
+            Email = "some@email.com",
+            PasswordHash = "foobar"
+        };
+        _database.InsertNewUser(newUser.Email, newUser.PasswordHash).Returns(newUser);
 
-            _usersController = new UsersController(_logger, _database);
-        }
+        var result = _usersController.Post(newUser);
 
-        [Fact]
-        public void GivenUserIsNotAlreadyRegistered_WhenPostCalled_ThenOkObjectResultReturned()
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public void GivenUserIsAlreadyRegistered_WhenPostCalled_ThenBadRequestObjectResultReturned()
+    {
+        var newUser = new User
         {
-            var newUser = new User
-            {
-                Email = "some@email.com",
-                PasswordHash = "foobar"
-            };
-            _database.InsertNewUser(newUser.Email, newUser.PasswordHash).Returns(newUser);
+            Email = "some@email.com",
+            PasswordHash = "foobar"
+        };
+        _database.InsertNewUser(newUser.Email, newUser.PasswordHash).Returns(null as User);
 
-            var result = _usersController.Post(newUser);
+        var result = _usersController.Post(newUser);
 
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public void GivenUserIsAlreadyRegistered_WhenPostCalled_ThenBadRequestObjectResultReturned()
-        {
-            var newUser = new User
-            {
-                Email = "some@email.com",
-                PasswordHash = "foobar"
-            };
-            _database.InsertNewUser(newUser.Email, newUser.PasswordHash).Returns(null as User);
-
-            var result = _usersController.Post(newUser);
-
-            Assert.IsType<BadRequestObjectResult>(result);
-        }
+        Assert.IsType<BadRequestObjectResult>(result);
     }
 }

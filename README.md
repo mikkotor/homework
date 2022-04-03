@@ -23,14 +23,14 @@ The database is implemented using SQLite and is created at launch if not present
 
 This project is built using and depends on:
 
-* .NET Core 3.1 SDK
+* .NET 6 SDK
 * Various NuGet packages mentioned above for providing email and password checks and password encryption
 * Xunit and NSubstitute for unit and integration tests
 
 ## How to run
 
 * Clone this repository to your machine
-* Make sure you have .NET Core 3.1 SDK installed
+* Make sure you have .NET 6 SDK installed
 * If you have Visual Studio on your machine, open the solution file and mark both Backend and Fronted solutions as startup projects, then rebuild and run
 * You can also use dotnet CLI tool to run the project. In this mode, Run Backend.csproj and Frontend.csproj on their own terminals
 

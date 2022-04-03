@@ -6,125 +6,124 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Data.Common;
 
-namespace Backend.Services
+namespace Backend.Services;
+
+public class DatabaseService : IDatabaseService
 {
-    public class DatabaseService : IDatabaseService
+    private readonly string _connectionString;
+    private readonly ILogger<DatabaseService> _logger;
+
+    public DatabaseService(ILogger<DatabaseService> logger, IConfiguration configuration)
     {
-        private readonly string _connectionString;
-        private readonly ILogger<DatabaseService> _logger;
+        _logger = logger;
+        _connectionString = configuration.GetConnectionString("Backend");
+        PrepareDb();
+    }
 
-        public DatabaseService(ILogger<DatabaseService> logger, IConfiguration configuration)
+    /// <summary>
+    /// Prepare database for operation, ie. create the Backend.db file and Users table within if not already present
+    /// </summary>
+    private void PrepareDb()
+    {
+        try
         {
-            _logger = logger;
-            _connectionString = configuration.GetConnectionString("Backend");
-            PrepareDb();
+            using var connection = OpenNewConnection();
+            var command = connection.CreateCommand();
+            command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("CreateUsersTable.sql");
+            command.ExecuteNonQuery();
         }
-
-        /// <summary>
-        /// Prepare database for operation, ie. create the Backend.db file and Users table within if not already present
-        /// </summary>
-        private void PrepareDb()
+        catch (Exception ex)
         {
-            try
+            _logger.LogCritical(ex, "Fatal error! Cannot prepare database for operation");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Open a new connection to database using the configured connection string from appsettings.json
+    /// </summary>
+    /// <returns>A new open connection to Database.db</returns>
+    private DbConnection OpenNewConnection()
+    {
+        var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+        return connection;
+    }
+
+    public User InsertNewUser(string email, string passwordHash)
+    {
+        var newUser = new User()
+        {
+            Email = email,
+            PasswordHash = passwordHash
+        };
+
+        try
+        {
+            using var connection = OpenNewConnection();
+            DbCommand command = connection.CreateCommand();
+            command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("InsertNewUser.sql");
+
+            var param1 = command.CreateParameter();
+            param1.ParameterName = "Email";
+            param1.Value = newUser.Email;
+            param1.DbType = System.Data.DbType.String;
+            command.Parameters.Add(param1);
+
+            var param2 = command.CreateParameter();
+            param2.ParameterName = "PasswordHash";
+            param2.Value = newUser.PasswordHash;
+            param2.DbType = System.Data.DbType.String;
+            command.Parameters.Add(param2);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
             {
-                using var connection = OpenNewConnection();
-                var command = connection.CreateCommand();
-                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("CreateUsersTable.sql");
-                command.ExecuteNonQuery();
+                newUser.Id = reader.GetInt32(0);
+                return newUser;
             }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Fatal error! Cannot prepare database for operation");
-                throw;
-            }
+            else
+                throw new Exception("Couldn't read primary key.");
         }
-
-        /// <summary>
-        /// Open a new connection to database using the configured connection string from appsettings.json
-        /// </summary>
-        /// <returns>A new open connection to Database.db</returns>
-        private DbConnection OpenNewConnection()
+        catch (Exception ex)
         {
-            var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-            return connection;
+            _logger.LogError(ex, $"Failed to add '{email}' to database.");
+            return null;
         }
+    }
 
-        public User InsertNewUser(string email, string passwordHash)
+    public User GetUserWithEmail(string email)
+    {
+        try
         {
-            var newUser = new User()
+            using var connection = OpenNewConnection();
+            DbCommand command = connection.CreateCommand();
+            command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("GetUserWithEmail.sql");
+
+            var param1 = command.CreateParameter();
+            param1.ParameterName = "Email";
+            param1.Value = email;
+            param1.DbType = System.Data.DbType.String;
+            command.Parameters.Add(param1);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
             {
-                Email = email,
-                PasswordHash = passwordHash
-            };
-
-            try
-            {
-                using var connection = OpenNewConnection();
-                DbCommand command = connection.CreateCommand();
-                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("InsertNewUser.sql");
-
-                var param1 = command.CreateParameter();
-                param1.ParameterName = "Email";
-                param1.Value = newUser.Email;
-                param1.DbType = System.Data.DbType.String;
-                command.Parameters.Add(param1);
-
-                var param2 = command.CreateParameter();
-                param2.ParameterName = "PasswordHash";
-                param2.Value = newUser.PasswordHash;
-                param2.DbType = System.Data.DbType.String;
-                command.Parameters.Add(param2);
-
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
+                var user = new User
                 {
-                    newUser.Id = reader.GetInt32(0);
-                    return newUser;
-                }
-                else
-                    throw new Exception("Couldn't read primary key.");
+                    Id = reader.GetInt32(0),
+                    Email = reader.GetString(1),
+                    PasswordHash = reader.GetString(2)
+                };
+                return user;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to add '{email}' to database.");
+            else
                 return null;
-            }
         }
-
-        public User GetUserWithEmail(string email)
+        catch (Exception ex)
         {
-            try
-            {
-                using var connection = OpenNewConnection();
-                DbCommand command = connection.CreateCommand();
-                command.CommandText = EmbeddedResourceHelper.GetFileContentsAsString("GetUserWithEmail.sql");
-
-                var param1 = command.CreateParameter();
-                param1.ParameterName = "Email";
-                param1.Value = email;
-                param1.DbType = System.Data.DbType.String;
-                command.Parameters.Add(param1);
-
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
-                {
-                    var user = new User
-                    {
-                        Id = reader.GetInt32(0),
-                        Email = reader.GetString(1),
-                        PasswordHash = reader.GetString(2)
-                    };
-                    return user;
-                }
-                else
-                    return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to search for '{email}' from database.");
-                return null;
-            }
+            _logger.LogError(ex, $"Failed to search for '{email}' from database.");
+            return null;
         }
     }
 }

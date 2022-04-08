@@ -10,7 +10,7 @@ Password strength is checked using [PasswordValidator](https://github.com/havard
 When all validation checks are completed, the 'Register' button is enabled. When the user presses this button, the following happens:
 
 1. The email address is checked against the backend service to verify it isn't already found in the database. If it is, the user is notified
-2. Next, the password is encrypted using [BCrypt](https://github.com/caetanoharyon/bcrypt-core) before sending a POST request to the backend server
+2. Next, the password is encrypted using [BCrypt.Net-Core](https://github.com/neoKushan/BCrypt.Net-Core) before sending a POST request to the backend server
 3. Lastly, the form is cleared and a message is shown to the user of whether the registration was a success or not
 
 ## The backend service and database
@@ -34,7 +34,7 @@ This project is built using and depends on:
 * If you have Visual Studio on your machine, open the solution file and mark both Backend and Fronted solutions as startup projects, then rebuild and run
 * You can also use dotnet CLI tool to run the project. In this mode, Run Backend.csproj and Frontend.csproj on their own terminals
 
-**Caveat! Make sure ports 5000 and 5001 are free on your machine, otherwise one or both apps fail to launch**
+### Caveat! Make sure ports 5000 and 5001 are free on your machine, otherwise one or both apps fail to launch
 
 ## Tests
 

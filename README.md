@@ -1,5 +1,7 @@
 # Simple [Blazor](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor) app to register an email address with a password
 
+## THIS REPOSITORY IS ARCHIVED
+
 ## Description
 
 The frontend app requires the user to enter a valid email and a password that is strong enough (8 characters long minimum and contains letters, numbers and symbols). It also requires the user to retype the password to reduce the possiblity of mistyping.
